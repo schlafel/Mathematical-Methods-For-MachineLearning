@@ -2,7 +2,9 @@
 import numpy as np
 import pandas as pd
 from nn_helper_func import *
-from sklearn
+
+from sklearn.preprocessing import OneHotEncoder
+
 
 
 
@@ -145,8 +147,21 @@ class DenseLayer():
 if __name__ == '__main__':
 
 
-    data_train = pd.read_csv("train.csv")
-    data_test = pd.read_csv("test.csv")
+    data_train = pd.read_csv(r"data\fashion-mnist_train.csv")
+    data_test = pd.read_csv(r"data\fashion-mnist_test.csv")
+
+    Y_train = data_train.pop("label")
+    Y_test = data_test.pop("label")
+
+
+    encoder = OneHotEncoder()
+
+    Y_train = encoder.fit_transform(Y_train)
+    Y_test = encoder.transform(Y_test)
+
+
+
+
 
     data_in = pd.DataFrame([1])
 
