@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 from nn_helper_func import *
-
+import pickle
 from sklearn.preprocessing import OneHotEncoder
 
 
@@ -20,6 +20,7 @@ class NN():
                  learning_rate = 0.01):
         self.input_size = input_size
         self.input_n = np.product(self.input_size)
+        self.learning_rate = learning_rate
 
     def add_layer(self,L):
         self.layers.append(L)
@@ -82,6 +83,7 @@ class NN():
 
 
             layer.parameters["a"] = a
+            layer.parameters["a_prev"] = x_new
 
             x_new = a
 
@@ -109,7 +111,7 @@ class NN():
         return cost
 
 
-    def backward_step(self,Y):
+    def backward_step(self):
         """
         Implementation of a backward calculation step
 
@@ -121,11 +123,16 @@ class NN():
                  np.divide(1 - self.Y, 1 - self.layers[-1].parameters["a"]))
 
         activation_backward(dAL,self.layers[-1])
+        self.update_parameters(self.layers[-1])
+
+
         prevLayer = self.layers[-1]
         for _i,layer in enumerate(reversed(self.layers[:-1])):
             print(_i,layer.activation)
             dA_prev= prevLayer.parameters["dA"]
-            activation_backward(dA_prev, self.layers[-1])
+            activation_backward(dA_prev, layer)
+
+            self.update_parameters(layer)
 
             prevLayer = layer
 
@@ -133,9 +140,16 @@ class NN():
 
 
 
+    def update_parameters(self, layer):
+        layer.parameters["W"] = layer.parameters["W"] -  layer.parameters["dW"]*self.learning_rate
+        layer.parameters["b"] = layer.parameters["b"] -  layer.parameters["db"]*self.learning_rate
 
 
 
+    def save(self,path):
+
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
 
 
 class DenseLayer():
@@ -144,7 +158,7 @@ class DenseLayer():
         self.parameters = dict({})
         self.activation = activation
 
-    def step(self,x)
+    def step(self,x):
 
         #get the parameters
         pass
@@ -174,7 +188,7 @@ class DenseLayer():
 if __name__ == '__main__':
 
 
-    data_train = pd.read_csv(r"data\fashion-mnist_train.csv",nrows=1000)
+    data_train = pd.read_csv(r"data\fashion-mnist_train.csv",nrows=100000000)
     data_test = pd.read_csv(r"data\fashion-mnist_test.csv")
 
     ylabs_train = data_train.pop("label")
@@ -190,7 +204,8 @@ if __name__ == '__main__':
 
 
 
-    myNetwork = NN(input_size = (28,28))
+    myNetwork = NN(input_size = (28,28),
+                   learning_rate = 1e-4)
     Layer1 = DenseLayer(n_neurons=100)
     Layer2 = DenseLayer(n_neurons=10,activation="sigmoid")
 
@@ -207,11 +222,16 @@ if __name__ == '__main__':
     myNetwork.Y = Y_train
 
 
-    myNetwork.backward_step()
+
+    for i in range(1,30):
+        print("Epoch:", i, 30*"*")
+        myNetwork.backward_step()
+        myNetwork.forward_pass(data_train.values.T)
+        myNetwork.compute_cost(Y_train)
 
 
 
-
+    myNetwork.save("test.pkl")
 
     print("done")
 
