@@ -4,8 +4,14 @@ import numpy as np
 from sklearn.metrics import confusion_matrix,accuracy_score
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib
+
+matplotlib.use("TkAgg")
+
+
 
 class_names = ["T-shirt/top" , "Trouser","Pullover","Dress","Coat","Sandal","Shirt","Sneaker","Bag","Ankle boot"]
+
 
 if __name__ == '__main__':
     #load network
@@ -15,7 +21,7 @@ if __name__ == '__main__':
     print("loaded file")
     data_train,Y_train,data_test,Y_test,enc = load_data()
 
-    preds = nn.forward_pass(data_test.T).T
+    preds = nn.predict(data_test.T).T
 
     acc = accuracy_score(np.argmax(preds, axis=1), np.argmax(Y_test.T, 1))
 
