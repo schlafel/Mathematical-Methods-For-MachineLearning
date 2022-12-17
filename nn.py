@@ -89,6 +89,7 @@ class NN():
 
 
         print("done")
+        return x_new
 
 
 
@@ -164,45 +165,22 @@ class DenseLayer():
         pass
 
 
+def load_data():
 
+    data_train = pd.read_csv(r"data\fashion-mnist_train.csv", nrows=100000000)
+    data_test = pd.read_csv(r"data\fashion-mnist_test.csv")
+    ylabs_train = data_train.pop("label")
+    ylabs_test = data_test.pop("label")
+    encoder = OneHotEncoder(sparse=False)
+    Y_train = encoder.fit_transform(ylabs_train.values.reshape(-1, 1)).T
+    Y_test = encoder.transform(ylabs_test.values.reshape(-1, 1)).T
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return data_train,Y_train,data_test,Y_test
 
 if __name__ == '__main__':
 
 
-    data_train = pd.read_csv(r"data\fashion-mnist_train.csv",nrows=100000000)
-    data_test = pd.read_csv(r"data\fashion-mnist_test.csv")
-
-    ylabs_train = data_train.pop("label")
-    ylabs_test = data_test.pop("label")
-
-
-    encoder = OneHotEncoder(sparse=False)
-
-    Y_train = encoder.fit_transform(ylabs_train.values.reshape(-1,1)).T
-    Y_test = encoder.transform(ylabs_test.values.reshape(-1,1)).T
-
-
-
-
+    data_train,Y_train,data_test,Y_test = load_data()
 
     myNetwork = NN(input_size = (28,28),
                    learning_rate = 1e-4)
@@ -216,7 +194,7 @@ if __name__ == '__main__':
 
 
     #do forward pass
-    myNetwork.forward_pass(data_train.values.T)
+    x_new = myNetwork.forward_pass(data_train.values.T)
 
     myNetwork.compute_cost(Y_train)
     myNetwork.Y = Y_train
