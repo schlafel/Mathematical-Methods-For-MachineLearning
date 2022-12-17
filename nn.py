@@ -4,8 +4,9 @@ import pandas as pd
 from nn_helper_func import *
 import pickle
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics import accuracy_score
 
-
+import matplotlib.pyplot as plt
 
 
 
@@ -21,6 +22,8 @@ class NN():
         self.input_size = input_size
         self.input_n = np.product(self.input_size)
         self.learning_rate = learning_rate
+        self.layers = []
+        self.parameters = dict()
 
     def add_layer(self,L):
         self.layers.append(L)
@@ -53,9 +56,11 @@ class NN():
         self.model_compiled = True
 
 
+    def predict(self,x):
+        preds = self.forward_pass(x,training=False)
 
-
-    def forward_pass(self,x):
+        return preds
+    def forward_pass(self,x,training = True):
 
         if not self.model_compiled:
             raise BaseException()
@@ -71,7 +76,8 @@ class NN():
             Z = W@x_new + b
 
             #Store the parameters of the linear function in Var. Z
-            layer.parameters["Z"] = Z
+            if training:
+                layer.parameters["Z"] = Z
 
             #now the activation
             if layer.activation == "ReLu":
@@ -81,9 +87,9 @@ class NN():
             elif layer.activation == "tanh":
                 a = tanh(Z)
 
-
-            layer.parameters["a"] = a
-            layer.parameters["a_prev"] = x_new
+            if training:
+                layer.parameters["a"] = a
+                layer.parameters["a_prev"] = x_new
 
             x_new = a
 
@@ -101,9 +107,8 @@ class NN():
 
         a_last = self.layers[-1].parameters["a"]
         # Compute loss from aL and y.
-        # (≈ 1 lines of code)
-        # cost = ...
-        # YOUR CODE STARTS HERE
+
+
         cost = -1 / m * np.sum(y * np.log(a_last) + (1 - y) * np.log(1 - a_last))
 
         cost = np.squeeze(cost)  # To make sure your cost's shape is what we expect (e.g. this turns [[17]] into 17).
@@ -166,21 +171,28 @@ class DenseLayer():
 
 
 def load_data():
+    train_data = np.loadtxt(r"data/fashion-mnist_train.csv", delimiter=",",skiprows=1)
+    Y_train = train_data[:,0]
+    X_train = train_data[:,1:]
 
-    data_train = pd.read_csv(r"data\fashion-mnist_train.csv", nrows=100000000)
-    data_test = pd.read_csv(r"data\fashion-mnist_test.csv")
-    ylabs_train = data_train.pop("label")
-    ylabs_test = data_test.pop("label")
+    test_data = np.loadtxt(r"data/fashion-mnist_test.csv", delimiter=",",skiprows=1)
+    Y_test = test_data[:,0]
+    X_test = test_data[:,1:]
+
+    # data_train = pd.read_csv(r"data\fashion-mnist_train.csv", nrows=100000000)
+    # data_test = pd.read_csv(r"data\fashion-mnist_test.csv")
+    # ylabs_train = data_train.pop("label")
+    # ylabs_test = data_test.pop("label")
     encoder = OneHotEncoder(sparse=False)
-    Y_train = encoder.fit_transform(ylabs_train.values.reshape(-1, 1)).T
-    Y_test = encoder.transform(ylabs_test.values.reshape(-1, 1)).T
+    Y_train_enc = encoder.fit_transform(Y_train.reshape(-1, 1)).T
+    Y_test_enc = encoder.transform(Y_test.reshape(-1, 1)).T
 
-    return data_train,Y_train,data_test,Y_test
+    return X_train,Y_train_enc,X_test,Y_test_enc,encoder
 
 if __name__ == '__main__':
 
 
-    data_train,Y_train,data_test,Y_test = load_data()
+    data_train,Y_train,data_test,Y_test,enc = load_data()
 
     myNetwork = NN(input_size = (28,28),
                    learning_rate = 1e-4)
@@ -194,24 +206,44 @@ if __name__ == '__main__':
 
 
     #do forward pass
-    x_new = myNetwork.forward_pass(data_train.values.T)
+    x_new = myNetwork.forward_pass(data_train.T)
 
     myNetwork.compute_cost(Y_train)
     myNetwork.Y = Y_train
 
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    line1, =ax.plot(0,0)
 
+    train_ = []
 
     for i in range(1,30):
         print("Epoch:", i, 30*"*")
         myNetwork.backward_step()
-        myNetwork.forward_pass(data_train.values.T)
-        myNetwork.compute_cost(Y_train)
+        myNetwork.forward_pass(data_train.T)
+        loss = myNetwork.compute_cost(Y_train)
 
+        #now test....
+        preds = myNetwork.predict(data_test.T)
+        acc = accuracy_score(np.argmax(preds, axis=0),
+                             np.argmax(Y_test.T, 1))
+
+        train_.append([i,loss,acc])
+        print("Accuracy: {:.1f}%".format(acc*100.))
+
+        line1.set_data(
+            np.array(train_)[:,0],
+            np.array(train_)[:,2],
+                       )
+        # fig.canvas.draw()
+        # fig.canvas.flush_events()
+        plt.draw()
 
 
     myNetwork.save("test.pkl")
 
     print("done")
+    plt.show()
 
 
 
