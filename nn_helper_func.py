@@ -1,7 +1,4 @@
-
-
 import numpy as np
-
 
 def relu(Z):
     A = np.maximum(Z,0)
@@ -52,7 +49,6 @@ def sigmoid_backward(dA, l):
     """
 
     Z = l.parameters["Z"]
-
     s = 1 / (1 + np.exp(-Z))
     dZ = dA * s * (1 - s)
 
@@ -61,11 +57,8 @@ def sigmoid_backward(dA, l):
 
 
 def tanh_backward(dA,l):
-
     Z = l.parameters["Z"]
     dZ = 1 - dA**2
-
-
     assert (dZ.shape == Z.shape)
 
     return dZ

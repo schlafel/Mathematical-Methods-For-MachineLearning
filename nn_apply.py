@@ -25,10 +25,11 @@ if __name__ == '__main__':
 
     acc = accuracy_score(np.argmax(preds, axis=1), np.argmax(Y_test.T, 1))
 
-    conf_mat = confusion_matrix(np.argmax(Y_test, axis=0), np.argmax(preds.T, axis=0))
-
-    fig,ax = plt.subplots(1)
-    sns.heatmap(conf_mat)
+    conf_mat = confusion_matrix(np.argmax(Y_test, axis=0), np.argmax(preds.T, axis=0), normalize="true")
+    fig, ax = plt.subplots(1)
+    sns.heatmap(conf_mat * 100., xticklabels=class_names, yticklabels=class_names, annot=True, fmt=".1f", vmin=0,
+                vmax=100)
+    plt.tight_layout()
 
     idx_rnd = np.random.choice(range(Y_test.shape[1]), 9)
     fig, axs = plt.subplots(3, 3)

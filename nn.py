@@ -157,6 +157,10 @@ class NN():
         with open(path, 'wb') as f:
             pickle.dump(self, f)
 
+    def fit(self):
+
+
+
 
 class DenseLayer():
     def __init__(self,n_neurons = 10,activation = "ReLu"):
