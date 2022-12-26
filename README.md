@@ -69,10 +69,12 @@ New Predictions can be made using the ```predict()```-method from the ```NN```-c
 For the Fashion-Mnist-Dataset (https://github.com/zalandoresearch/fashion-mnist), training the network with the configuration from the above 
 chapter resulted in an overall accuracy of ~60%. 
 
+## Confusion matrix
 Training results are shown below
 ![Training loss & accuracy](Figures/PredictionAccuracyLoss.svg)
 
 
+## Sample predictions
 Some predictions for 9 elements from the test-data 
 are shown in the plot below:
 
