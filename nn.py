@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 class NN():
 
     cache = dict({})
-    layers = []
+    #layers = []
     total_parms = 0
     def __init__(self,input_size = (1,1),
                  learning_rate = 0.01):
@@ -24,7 +24,7 @@ class NN():
         self.learning_rate = learning_rate
         self.layers = []
         self.parameters = dict()
-
+        self.trained = False
     def add_layer(self,L):
         self.layers.append(L)
         self.model_compiled = False
@@ -157,9 +157,46 @@ class NN():
         with open(path, 'wb') as f:
             pickle.dump(self, f)
 
-    def fit(self):
+    def fit(self,X_train,Y_train,X_test,Y_test,plot_res = True):
+        # do forward pass
+        x_new = self.forward_pass(X_train.T)
 
+        self.compute_cost(Y_train)
+        self.Y = Y_train
 
+        if plot_res:
+            fig = plt.figure()
+            ax = fig.add_subplot(111)
+            line1, = ax.plot(0, 0)
+
+        train_ = []
+
+        for i in range(1, 30):
+            print("Epoch:", i, 30 * "*")
+            self.backward_step()
+            self.forward_pass(X_train.T)
+            self.loss = self.compute_cost(Y_train)
+
+            # now test....
+            preds = self.predict(X_test.T)
+            acc = accuracy_score(np.argmax(preds, axis=0),
+                                 np.argmax(Y_test.T, 1))
+
+            train_.append([i, self.loss, acc])
+            print("Accuracy: {:.1f}%".format(acc * 100.))
+
+            if plot_res:
+                line1.set_data(
+                    np.array(train_)[:, 0],
+                    np.array(train_)[:, 2],
+                )
+                # fig.canvas.draw()
+                # fig.canvas.flush_events()
+                plt.draw()
+
+        self.trained = True
+        print("done")
+        plt.show()
 
 
 class DenseLayer():
@@ -208,41 +245,11 @@ if __name__ == '__main__':
     myNetwork.compile()
 
 
-
-    #do forward pass
-    x_new = myNetwork.forward_pass(data_train.T)
-
-    myNetwork.compute_cost(Y_train)
-    myNetwork.Y = Y_train
-
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    line1, =ax.plot(0,0)
-
-    train_ = []
-
-    for i in range(1,30):
-        print("Epoch:", i, 30*"*")
-        myNetwork.backward_step()
-        myNetwork.forward_pass(data_train.T)
-        loss = myNetwork.compute_cost(Y_train)
-
-        #now test....
-        preds = myNetwork.predict(data_test.T)
-        acc = accuracy_score(np.argmax(preds, axis=0),
-                             np.argmax(Y_test.T, 1))
-
-        train_.append([i,loss,acc])
-        print("Accuracy: {:.1f}%".format(acc*100.))
-
-        line1.set_data(
-            np.array(train_)[:,0],
-            np.array(train_)[:,2],
-                       )
-        # fig.canvas.draw()
-        # fig.canvas.flush_events()
-        plt.draw()
-
+    myNetwork.fit(X_train=data_train,
+                  Y_train = Y_train,
+                  X_test = data_test,
+                  Y_test = Y_test,
+                  plot_res=True)
 
     myNetwork.save("test.pkl")
 
