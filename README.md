@@ -1,6 +1,6 @@
 # Implementation of a neural network from scratch
 A very simple and working implementation of a neural network from scratch.
-For this implementation, only numpy is used. For preprocessing the data, sklearn is used. For implementation details, please refer to the [https://github.com/schlafel/Mathematical-Methods-For-MachineLearning/blob/main/Implementation_NeuralNetwork_FromScratch_.ipynb][Jupyter Notebook]
+For this implementation, only numpy is used. For preprocessing the data, sklearn is used. For implementation details, please refer to the (https://github.com/schlafel/Mathematical-Methods-For-MachineLearning/blob/main/Implementation_NeuralNetwork_FromScratch_.ipynb)[Jupyter Notebook]
 
 
 
